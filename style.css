@@ -1,0 +1,17 @@
+
+.square {
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  font-size: 50px;
+  outline: none;
+  box-sizing: border-box;
+  vertical-align: middle;
+  border-width: 0.5px;
+  background-color: rgb(251, 225, 225);
+}
+
+.main {
+    margin: 5px;
+}
+

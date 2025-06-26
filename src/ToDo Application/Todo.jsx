@@ -33,6 +33,7 @@ export default function ToDo() {
   const [todoToDelete, setTodoToDelete] = useState(null);
 
   const [openCheckDialog, setOpenCheckDialog] = useState(false);
+  const [selectedToDo, setSelectedToDo] = useState(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -105,6 +106,7 @@ export default function ToDo() {
 
   function handleCheck(eachToDo) {
     setOpenCheckDialog(true);
+    setSelectedToDo(eachToDo);
     alert(JSON.stringify(eachToDo));
   }
 
@@ -141,7 +143,12 @@ export default function ToDo() {
       String(now.getHours()).padStart(2, "0") +
       String(now.getMinutes()).padStart(2, "0") +
       String(now.getSeconds()).padStart(2, "0");
-    const newTodo = { ListId: selected.id, id, ToDo: newTaskText.trim() };
+    const newTodo = {
+      ListId: selected.id,
+      id,
+      ToDo: newTaskText.trim(),
+      status: "pending",
+    };
     const UpdatedToDos = [...Todos, newTodo];
     setTodos(UpdatedToDos);
     localStorage.setItem("Todos", JSON.stringify(UpdatedToDos));
@@ -155,6 +162,33 @@ export default function ToDo() {
           eachToDo.ToDo.toLowerCase().includes(searchToDo.toLowerCase())
       )
     : [];
+
+  const pendingToDos = filteredTodos.filter(
+    (todo) => todo.status === "pending"
+  );
+  const completedToDos = filteredTodos.filter((todo) => todo.status === "done");
+
+  function confirmCheckToDo() {
+    console.log("Mark as Done clicked");
+    const updated = Todos.map((todo) =>
+      todo.id === selectedToDo.id ? { ...todo, status: "done" } : todo
+    );
+
+    setTodos([...updated]); // Force a new array
+    console.log("Closing dialog...");
+    setOpenCheckDialog(false);
+    setSelectedToDo(null);
+  }
+
+  function handleUnCheck(todoUpdate) {
+    alert("UNCHECK");
+    const updated = Todos.map((todo) =>
+      todo.id === todoUpdate.id ? { ...todo, status: "pending" } : todo
+    );
+
+    setTodos(updated);
+    localStorage.setItem("Todos", JSON.stringify(updated));
+  }
 
   return (
     <div
@@ -193,6 +227,7 @@ export default function ToDo() {
 
         {selected && (
           <>
+            {/* Search Bar */}
             <div
               style={{
                 display: "flex",
@@ -217,10 +252,12 @@ export default function ToDo() {
                 value={searchToDo}
                 onChange={handleSearchToDo}
               />
-              {/* <h2>{searchToDo}</h2> */}
             </div>
-            {filteredTodos.length > 0 ? (
-              filteredTodos.map((eachToDo) => (
+
+            {/* Pending ToDos */}
+            <h3 style={{ color: "#fff" }}>Pending Tasks</h3>
+            {pendingToDos.length > 0 ? (
+              pendingToDos.map((eachToDo) => (
                 <div
                   key={eachToDo.id}
                   style={{
@@ -307,6 +344,48 @@ export default function ToDo() {
                 </div>
               ))
             ) : (
+              <p style={{ color: "#bbb" }}>No pending tasks found.</p>
+            )}
+
+            {/* Completed or Filtered ToDos */}
+            {completedToDos.length > 0 && (
+              <>
+                <h3 style={{ color: "#fff" }}>Completed Tasks</h3>
+                {completedToDos.map((eachToDo) => (
+                  <div
+                    key={eachToDo.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "12px 16px",
+                      backgroundColor: "#3a3a4d",
+                      borderRadius: 8,
+                      marginBottom: 16,
+                    }}
+                  >
+                    <h5 style={{ flex: 1, textDecoration: "line-through" }}>
+                      {eachToDo.ToDo}
+                    </h5>
+                    <button
+                      onClick={() => handleUnCheck(eachToDo)}
+                      style={{
+                        backgroundColor: "orange",
+                        border: "none",
+                        color: "black",
+                        padding: 8,
+                        borderRadius: 6,
+                      }}
+                    >
+                      UNCHECK
+                    </button>
+                  </div>
+                ))}
+              </>
+            )}
+
+            {/* No tasks */}
+            {pendingToDos.length === 0 && filteredTodos.length === 0 && (
               <p style={{ color: "#bbb" }}>
                 {searchToDo
                   ? "No matching tasks found."
@@ -330,7 +409,7 @@ export default function ToDo() {
         }}
         onClick={handleAddTask}
       >
-        Add Task
+        + Add Task
       </button>
 
       <Dialog open={openListDialog} onClose={() => setOpenListDialog(false)}>
@@ -439,9 +518,21 @@ export default function ToDo() {
           <DialogContentText>
             You just clicked the check icon. Customize this dialog as needed!
           </DialogContentText>
+          <DialogContentText>
+            {selectedToDo?.id} : {selectedToDo?.ToDo}
+          </DialogContentText>
         </DialogContent>
+
+        {/* ✅ Put both buttons inside DialogActions */}
         <DialogActions>
           <Button onClick={() => setOpenCheckDialog(false)}>Close</Button>
+          <Button
+            onClick={confirmCheckToDo}
+            color="primary"
+            variant="contained"
+          >
+            Mark as Done
+          </Button>
         </DialogActions>
       </Dialog>
     </div>

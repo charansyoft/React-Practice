@@ -198,8 +198,10 @@ export default function ToDo() {
         width: "100vw",
         backgroundColor: "#1e1e2f",
         color: "#f5f5f5",
+        marginTop: "70px",
       }}
     >
+      
       <ListSection
         Lists={Lists}
         onListClick={setSelected}

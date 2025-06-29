@@ -1,18 +1,20 @@
 import { useState } from "react";
 import * as Yup from "yup";
-import { useFormik } from "formik";
+import { signUpAPI } from "../API/auth/SignUpApi";
+import { useNavigate } from "react-router-dom";
 
 export default function SignUp() {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
-  function handleSignUp() {
+  
+  async function handleSignUp() {
     let userData;
     Yup.object({
-        name: Yup.string().required("name is req")
-    })
+      name: Yup.string().required("name is req"),
+    });
     if (phoneNumber == "") {
       alert("Please enter phone");
     }
@@ -25,10 +27,25 @@ export default function SignUp() {
     if (password == confirmPassword) {
       userData = {
         name,
-        phoneNumber,
+        phone: phoneNumber,
         password: confirmPassword,
       };
-      alert(JSON.stringify(userData));
+
+      try {
+        const res = await signUpAPI(userData);
+
+        if (res.error) {
+          alert(res.error);
+        } else {
+alert(`${res.message}`);
+navigate("/login");
+        }
+      } catch (err) {
+        console.error("Signup failed:", err);
+        alert("Signup error");
+      }
+
+      // alert(JSON.stringify(userData));
     } else {
       alert("PASSWORD NOT MATCHED");
     }

@@ -44,9 +44,7 @@ export default function ListSection({
           marginBottom: 3,
         }}
       >
-        <Typography variant="h6" fontWeight={600}>
-          ToDO Lists
-        </Typography>
+
         <Button
           variant="contained"
           color="primary"

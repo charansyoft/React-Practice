@@ -1,7 +1,10 @@
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 export default function NavBar() {
   const navigate = useNavigate();
+  const token = Cookies.get("token")
+  const userId = Cookies.get("user_id")
 
   function handleSignUp() {
     navigate("/signup");
@@ -34,7 +37,15 @@ export default function NavBar() {
     >
       <h2 style={{ cursor: "pointer" }} onClick={handleHome}>TODO'S</h2>
       <div style={{ display: "flex", gap: 15 }}>
-        <button
+      { token ? (
+<>
+        <h2>{userId}</h2>
+        <button>LogOut</button></>
+
+      ) : (
+        <>
+              
+                <button
           style={{ borderWidth: 0.5, borderColor: "rgba(255, 255, 255, 0.25)" }}
           onClick={handleSignUp}
         >
@@ -45,7 +56,9 @@ export default function NavBar() {
           onClick={handleLogIn}
         >
           Login
-        </button>
+        </button></>
+      )}
+        
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ import NavBar from "./ToDo Application/NavBar";
 import SignUp from "./ToDo Application/SignUp";
 import LogIn from "./ToDo Application/LogIn";
 import FrontPage from "./ToDo Application/FrontPage";
-
+import ToDo from "./ToDo Application/Todo";
 const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")).render(
@@ -19,6 +19,7 @@ createRoot(document.getElementById("root")).render(
           <Route path="/" element={<FrontPage/>} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<LogIn />} />
+          <Route path="/userFrontPage" element={<ToDo/>} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>

@@ -16,13 +16,14 @@ import {
 
 export default function Lists({ setSelectedList }) {
   const [lists, setLists] = useState([]);
+  const [search, setSearch] = useState("");
 
   const [editDialog, setEditDialog] = useState(false);
   const [editList, setEditList] = useState(null);
   const [newName, setNewName] = useState("");
 
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false); // ✅
-  const [listToDelete, setListToDelete] = useState(null); // ✅
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [listToDelete, setListToDelete] = useState(null);
 
   useEffect(() => {
     async function fetchLists() {
@@ -59,7 +60,6 @@ export default function Lists({ setSelectedList }) {
       if (!response.ok) throw new Error(data.error || "Failed to delete list");
 
       setLists((prev) => prev.filter((l) => l.id !== listToDelete.id));
-      // alert("✅ List deleted successfully");
     } catch (error) {
       alert("❌ " + error.message);
     } finally {
@@ -106,7 +106,6 @@ export default function Lists({ setSelectedList }) {
         l.id === editList.id ? { ...l, listName: newName.trim() } : l
       );
       setLists(updated);
-      // alert("✅ List updated successfully");
       setEditDialog(false);
       setEditList(null);
       setNewName("");
@@ -125,18 +124,21 @@ export default function Lists({ setSelectedList }) {
     setNewName("");
   }
 
+  const filteredLists = lists.filter((list) =>
+    list.listName.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div>
       <AddNewList lists={lists} setLists={setLists} />
-      <SearchList />
+      <SearchList value={search} onChange={setSearch} />
       <ViewLists
-        lists={lists}
+        lists={filteredLists}
         onDelete={handleListDelete}
         onEdit={handleListEdit}
         onSelected={handleSelected}
       />
 
-      {/* Edit Dialog */}
       <Dialog open={editDialog} onClose={handleEditDialogClose}>
         <DialogTitle>Edit List Name</DialogTitle>
         <DialogContent>
@@ -160,12 +162,11 @@ export default function Lists({ setSelectedList }) {
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={cancelDelete}>
         <DialogTitle>Delete Confirmation</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete{" "}
+            Are you sure you want to delete {" "}
             <strong>{listToDelete?.listName}</strong>?
           </Typography>
         </DialogContent>

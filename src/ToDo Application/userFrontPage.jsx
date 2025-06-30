@@ -10,15 +10,16 @@ export default function UserFrontPage() {
         paddingTop: 75,
         display: "flex",
         width: "100vw",
-        height: "100vh",
+        minHeight: "100vh",
+        height: "auto",
         backgroundColor: "black",
       }}
     >
       <div style={{ width: "30vw", backgroundColor: "wheat" }}>
-        <Lists setSelectedList={setSelectedList}/>
+        <Lists setSelectedList={setSelectedList} />
       </div>
       <div style={{ width: "70vw", backgroundColor: "green" }}>
-        <ToDos selectedList={selectedList}/>
+        <ToDos selectedList={selectedList} />
       </div>
     </div>
   );

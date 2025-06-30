@@ -11,7 +11,7 @@ export default function ViewLists({ lists, onDelete, onEdit, onSelected }) {
       <h3>View Lists</h3>
       {lists.map((list) => (
         <div
-        onClick={()=>onSelected(list)}
+          onClick={() => onSelected(list)}
           key={list.id}
           style={{
             display: "flex",
@@ -19,8 +19,10 @@ export default function ViewLists({ lists, onDelete, onEdit, onSelected }) {
             columnGap: 5,
             marginBottom: 10,
             cursor: "pointer",
-            backgroundColor:"black",
-            padding:8,borderRadius:15,width:"25vw"
+            backgroundColor: "black",
+            padding: 8,
+            borderRadius: 15,
+            width: "25vw",
           }}
         >
           <div
@@ -38,17 +40,25 @@ export default function ViewLists({ lists, onDelete, onEdit, onSelected }) {
             {list.listName}
           </div>
           <button
-            style={{ height: 40, width: "30px",               borderColor: "gray",
+            style={{
+              height: 40,
+              width: "30px",
+              borderColor: "gray",
               borderWidth: 1,
-              borderStyle: "solid", }}
+              borderStyle: "solid",
+            }}
             onClick={() => onDelete(list)}
           >
             D
           </button>
           <button
-            style={{ height: 40, width: "30px",              borderColor: "gray",
+            style={{
+              height: 40,
+              width: "30px",
+              borderColor: "gray",
               borderWidth: 1,
-              borderStyle: "solid", }}
+              borderStyle: "solid",
+            }}
             onClick={() => onEdit(list)}
           >
             E

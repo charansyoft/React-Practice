@@ -33,6 +33,11 @@ export default function SignUp() {
             expires: 7,
           });
 
+Cookies.set("user_name", response.user_name, {
+  expires: 7,
+});
+
+
           // Navigate or do something
           navigate("/userFrontPage");
         }

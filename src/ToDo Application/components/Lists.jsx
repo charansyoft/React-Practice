@@ -1,161 +1,181 @@
-import React, { useState } from "react";
+import AddNewList from "./subComponents/AddNewList";
+import SearchList from "./subComponents/SearchList";
+import ViewLists from "./subComponents/ViewLists";
+import { getListsWithUserId } from "../../API/Lists/getListsWithUserId";
+import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 import {
-  Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
   Button,
   Typography,
-  IconButton,
-  Paper,
-  InputBase,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import SearchIcon from "@mui/icons-material/Search";
 
-export default function ListSection({
-  Lists,
-  onListClick,
-  selected,
-  onAddList,
-  DeleteList,
-}) {
-  const [searchText, setSearchText] = useState("");
+export default function Lists({ setSelectedList }) {
+  const [lists, setLists] = useState([]);
 
-  function handleSearchText(event) {
-    setSearchText(event.target.value);
+  const [editDialog, setEditDialog] = useState(false);
+  const [editList, setEditList] = useState(null);
+  const [newName, setNewName] = useState("");
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false); // ✅
+  const [listToDelete, setListToDelete] = useState(null); // ✅
+
+  useEffect(() => {
+    async function fetchLists() {
+      try {
+        const userLists = await getListsWithUserId();
+        setLists(userLists);
+      } catch (error) {
+        alert("Failed to fetch lists");
+      }
+    }
+    fetchLists();
+  }, []);
+
+  function handleListDelete(list) {
+    setListToDelete(list);
+    setDeleteDialogOpen(true);
+  }
+
+  async function confirmDelete() {
+    if (!listToDelete) return;
+
+    try {
+      const token = Cookies.get("token");
+      const response = await fetch("http://localhost:5000/delete_lists", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ listId: listToDelete.id }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to delete list");
+
+      setLists((prev) => prev.filter((l) => l.id !== listToDelete.id));
+      // alert("✅ List deleted successfully");
+    } catch (error) {
+      alert("❌ " + error.message);
+    } finally {
+      setDeleteDialogOpen(false);
+      setListToDelete(null);
+    }
+  }
+
+  function cancelDelete() {
+    setDeleteDialogOpen(false);
+    setListToDelete(null);
+  }
+
+  function handleListEdit(list) {
+    setEditList(list);
+    setNewName(list.listName);
+    setEditDialog(true);
+  }
+
+  async function submitListEdit() {
+    if (!newName.trim()) {
+      alert("List name can't be empty");
+      return;
+    }
+
+    try {
+      const token = Cookies.get("token");
+      const response = await fetch("http://localhost:5000/edit_lists", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          listId: editList.id,
+          name: newName.trim(),
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to edit list");
+
+      const updated = lists.map((l) =>
+        l.id === editList.id ? { ...l, listName: newName.trim() } : l
+      );
+      setLists(updated);
+      // alert("✅ List updated successfully");
+      setEditDialog(false);
+      setEditList(null);
+      setNewName("");
+    } catch (error) {
+      alert("❌ " + error.message);
+    }
+  }
+
+  function handleSelected(list) {
+    setSelectedList(list);
+  }
+
+  function handleEditDialogClose() {
+    setEditDialog(false);
+    setEditList(null);
+    setNewName("");
   }
 
   return (
-    <Box
-      sx={{
-        width: "30%",
-        height: "100vh",
-        bgcolor: "#1e1e2f",
-        color: "#f5f5f5",
-        padding: 2,
-        borderRight: "1px solid #444",
-        fontFamily: "Inter, sans-serif",
-      }}
-    >
-      {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 3,
-        }}
-      >
+    <div>
+      <AddNewList lists={lists} setLists={setLists} />
+      <SearchList />
+      <ViewLists
+        lists={lists}
+        onDelete={handleListDelete}
+        onEdit={handleListEdit}
+        onSelected={handleSelected}
+      />
 
-        <Button
-          variant="contained"
-          color="primary"
-          size="small"
-          onClick={onAddList}
-          sx={{
-            textTransform: "none",
-            fontWeight: 500,
-            boxShadow: "none",
-            borderRadius: 2,
-          }}
-        >
-          + Add List
-        </Button>
-      </Box>
-
-      {/* Search Input */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          bgcolor: "#2a2a3b",
-          border: "1px solid #555",
-          borderRadius: 2,
-          padding: "4px 10px",
-          mb: 2,
-        }}
-      >
-        <SearchIcon sx={{ color: "#aaa", mr: 1 }} />
-        <InputBase
-          placeholder="Search lists..."
-          value={searchText}
-          onChange={handleSearchText}
-          sx={{
-            color: "#f5f5f5",
-            flex: 1,
-            fontSize: 14,
-          }}
-        />
-      </Box>
-
-      {/* Filter Info */}
-      <Typography
-        variant="caption"
-        sx={{ color: "#aaa", fontStyle: "italic", mb: 1, display: "block" }}
-      >
-        Showing results for: {searchText || "All"}
-      </Typography>
-
-      {/* List Cards */}
-      {Lists.filter((list) =>
-        list.ListName.toLowerCase().includes(searchText.toLowerCase())
-      ).map((eachList) => (
-        <Paper
-          key={eachList.id}
-          elevation={selected?.id === eachList.id ? 6 : 1}
-          sx={{
-            backgroundColor:
-              selected?.id === eachList.id ? "#3a3a4d" : "#2e2e40",
-            borderLeft:
-              selected?.id === eachList.id
-                ? "4px solid #4a90e2"
-                : "4px solid transparent",
-            padding: "10px 14px",
-            mb: 2,
-            borderRadius: 3,
-            transition: "all 0.3s ease",
-            cursor: "pointer",
-            "&:hover": {
-              backgroundColor: "#3c3c50",
-            },
-          }}
-        >
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-            onClick={() => onListClick(eachList)}
+      {/* Edit Dialog */}
+      <Dialog open={editDialog} onClose={handleEditDialogClose}>
+        <DialogTitle>Edit List Name</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            label="New Name"
+            fullWidth
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleEditDialogClose}>Cancel</Button>
+          <Button
+            onClick={submitListEdit}
+            disabled={!newName.trim()}
+            variant="contained"
           >
-            <Typography
-              variant="body1"
-              sx={{
-                fontWeight: 500,
-                color: "#fff",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-              
-            >
-              {eachList.ListName}
-            </Typography>
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-            <IconButton
-              onClick={() => {
-                onListClick(eachList);
-                setTimeout(() => {
-                  DeleteList(eachList);
-                }, 0);
-              }}
-              size="small"
-              sx={{
-                color: "#f44336",
-                "&:hover": { color: "#ff7961" },
-              }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        </Paper>
-      ))}
-    </Box>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={cancelDelete}>
+        <DialogTitle>Delete Confirmation</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete{" "}
+            <strong>{listToDelete?.listName}</strong>?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelDelete}>Cancel</Button>
+          <Button onClick={confirmDelete} variant="contained" color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
   );
 }

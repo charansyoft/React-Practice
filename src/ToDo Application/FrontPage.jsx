@@ -58,7 +58,7 @@ export default function FrontPage() {
           color: "#aaa",
         }}
       >
-        Redirecting to your productivity journey...
+        Welcome to your productivity journey
       </motion.div>
     </div>
   );
